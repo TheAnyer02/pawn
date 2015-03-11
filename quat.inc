@@ -1,3 +1,7 @@
+// Nero_3D
+// http://wiki.sa-mp.com/wiki/GetVehicleRotationQuat
+// http://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
+
 stock DotProduct(Float: x1, Float: y1, Float: z1, Float: x2, Float: y2, Float: z2, & Float: x, & Float: y, & Float: z) {
 	x = y1 * z2 - z1 * y2;
 	y = z1 * x2 - x1 * z2;
@@ -5,10 +9,6 @@ stock DotProduct(Float: x1, Float: y1, Float: z1, Float: x2, Float: y2, Float: z
 }
 
 stock QuatRotateVector(Float: w, Float: i, Float: j, Float: k, Float: X, Float: Y, Float: Z, & Float: x, & Float: y, & Float: z) {
-	// Nero_3D
-	// http://wiki.sa-mp.com/wiki/GetVehicleRotationQuat
-	// http://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
-
 	DotProduct(i, j, k, X, Y, Z, x, y, z);
 	DotProduct(
 		i + i,
