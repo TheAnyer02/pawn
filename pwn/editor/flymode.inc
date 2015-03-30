@@ -1,4 +1,4 @@
-// Extracted from some script and revised, credits to the original owner
+// Revised version to work as include, credits to h02
 
 #define MOVE_SPEED 100.0
 #define ACCEL_RATE 0.03
