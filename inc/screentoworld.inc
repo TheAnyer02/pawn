@@ -41,8 +41,6 @@ const
 	Float: cOnScreenY = 447.0
 ;
 
-#define DETECT_WIDESCREEN 1
-
 ///	<summary>Gets the CrossProduct of the vectors</summary>
 #if !defined CrossProduct
 	stock CrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
@@ -102,7 +100,7 @@ stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Flo
 	if((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY) && GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		new
 			Float: pX = ((screenX / cOnScreenX) - 0.5) * 2.0 * cInGameX,
-		#if DETECT_WIDESCREEN
+		#if defined GetPlayerCameraAspectRatio
 			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * (GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY),
 		#else
 			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * cInGameY,
@@ -182,7 +180,7 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 		x = (((x - cX) / screenX) - vX - (z * nXz)) / nXx;
 
 		screenX = ((x / (cInGameX * 2.0)) + 0.5) * cOnScreenX;
-	#if DETECT_WIDESCREEN
+	#if defined GetPlayerCameraAspectRatio
 		screenY = ((z / ((GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
 	#else
 		screenY = ((z / (cInGameY * 2.0)) + 0.5) * cOnScreenY;
@@ -191,5 +189,3 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 	}
 	return false;
 }
-
-#undef DETECT_WIDESCREEN
