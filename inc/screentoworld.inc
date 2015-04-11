@@ -20,6 +20,8 @@
   *				The Initial Developer of the Original Code is Mark aka "Nero_3D".
   *				Portions created by Initial Developer are Copyright (C) 2013
   *				the Initial Developer. All Rights Reserved.
+  *			</ul><ul>
+  *				Credits to Crayder for pushing the widescreen detection
   *			</ul>
   *		</ul>
   *	</subsection>
