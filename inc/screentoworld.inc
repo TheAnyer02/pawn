@@ -33,54 +33,42 @@
 
 /// These values were gathered by assumption of the size of the screen
 
-#if 1 // change this to 0 if you use widescreen - or create an player array and let the player decide
-	const
-		Float: cInGameX = 0.7,
-		Float: cInGameY = 0.525,
-		Float: cOnScreenX = 640.0,
-		Float: cOnScreenY = 447.0
-	;
-#else 
-	const // Widescreen
-		Float: cInGameX = 0.7,
-		Float: cInGameY = 0.4,
-		Float: cOnScreenX = 640.0,
-		Float: cOnScreenY = 447.0
-	;
-#endif
+const
+	Float: cInGameX = 0.7,
+	Float: cInGameY = 0.525,
+	Float: cInGameYw = 0.4, // Widescreen
+	Float: cOnScreenX = 640.0,
+	Float: cOnScreenY = 447.0
+;
+
+#define DETECT_WIDESCREEN 1
 
 ///	<summary>Gets the CrossProduct of the vectors</summary>
-
-static stock CrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
-	x = v1y * v2z - v2y * v1z;
-	y = v1z * v2x - v2z * v1x;
-	z = v1x * v2y - v2x * v1y;
-}
-
-///	<summary>Gets the magnitude of the vector</summary>
-
-static stock Float: GetMagnitudeOfVector(Float: x, Float: y, Float: z) {
-	return floatpower(x * x + y * y + z * z, 0.5);
-}
-
+#if !defined CrossProduct
+	stock CrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
+		x = v1y * v2z - v2y * v1z;
+		y = v1z * v2x - v2z * v1x;
+		z = v1x * v2y - v2x * v1y;
+	}
+#endif
 ///	<summary>Normalizes the vector</summary>
-
-static stock NormalizeVector(& Float: x, & Float: y, & Float: z) {
-	new
-		Float: length = GetMagnitudeOfVector(x, y, z)
-	;
-	x /= length;
-	y /= length;
-	z /= length;
-}
-
+#if !defined NormalizeVector
+	stock NormalizeVector(& Float: x, & Float: y, & Float: z) {
+		new
+			Float: length = VectorSize(x, y, z)
+		;
+		x /= length;
+		y /= length;
+		z /= length;
+	}
+#endif
 ///	<summary>Gets and normalizes the CrossProduct of the vectors</summary>
-
-static stock NormalizedCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
-	CrossProduct(x, y, z, v1x, v1y, v1z, v2x, v2y, v2z);
-	NormalizeVector(x, y, z);
-}
-
+#if !defined NormalizedCrossProduct
+	stock NormalizedCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
+		CrossProduct(x, y, z, v1x, v1y, v1z, v2x, v2y, v2z);
+		NormalizeVector(x, y, z);
+	}
+#endif
 /**
   *	<summary>
   *		Converts screen to world coordinates
@@ -111,10 +99,14 @@ static stock NormalizedCrossProduct(& Float: x, & Float: y, & Float: z, Float: v
   *
   **/
 stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Float: vY, & Float: vZ) {
-	if((0.0 <= screenX <= 640.0) && (0.0 <= screenY <= 480.0) && GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
+	if((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY) && GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		new
-			Float: pX = ((screenX / cOnScreenX) - 0.5) * cInGameX * 2.0,
-			Float: pZ = ((screenY / cOnScreenY) - 0.5) * cInGameY * 2.0,
+			Float: pX = ((screenX / cOnScreenX) - 0.5) * 2.0 * cInGameX,
+		#if DETECT_WIDESCREEN
+			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * (GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY),
+		#else
+			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * cInGameY,
+		#endif
 			Float: nXx, // vY
 			Float: nYx, // -vX
 			Float: nZx, // 0.0
@@ -190,9 +182,14 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 		x = (((x - cX) / screenX) - vX - (z * nXz)) / nXx;
 
 		screenX = ((x / (cInGameX * 2.0)) + 0.5) * cOnScreenX;
+	#if DETECT_WIDESCREEN
+		screenY = ((z / ((GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
+	#else
 		screenY = ((z / (cInGameY * 2.0)) + 0.5) * cOnScreenY;
-
-		return ((0.0 <= screenX <= 640.0) && (0.0 <= screenY <= 480.0));
+	#endif
+		return ((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY));
 	}
 	return false;
 }
+
+#undef DETECT_WIDESCREEN
