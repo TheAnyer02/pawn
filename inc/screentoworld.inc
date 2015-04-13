@@ -43,32 +43,20 @@ const
 	Float: cOnScreenY = 447.0
 ;
 
-///	<summary>Gets the CrossProduct of the vectors</summary>
-#if !defined CrossProduct
-	stock CrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
-		x = v1y * v2z - v2y * v1z;
-		y = v1z * v2x - v2z * v1x;
-		z = v1x * v2y - v2x * v1y;
-	}
-#endif
-///	<summary>Normalizes the vector</summary>
-#if !defined NormalizeVector
-	stock NormalizeVector(& Float: x, & Float: y, & Float: z) {
-		new
-			Float: length = VectorSize(x, y, z)
-		;
-		x /= length;
-		y /= length;
-		z /= length;
-	}
-#endif
 ///	<summary>Gets and normalizes the CrossProduct of the vectors</summary>
-#if !defined NormalizedCrossProduct
-	stock NormalizedCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
-		CrossProduct(x, y, z, v1x, v1y, v1z, v2x, v2y, v2z);
-		NormalizeVector(x, y, z);
-	}
-#endif
+
+static stock STW_NormCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x, Float: v1y, Float: v1z, Float: v2x, Float: v2y, Float: v2z) {
+	x = v1y * v2z - v2y * v1z;
+	y = v1z * v2x - v2z * v1x;
+	z = v1x * v2y - v2x * v1y;
+
+	v1x = VectorSize(x, y, z);
+
+	x /= v1x;
+	y /= v1x;
+	z /= v1x;
+}
+
 /**
   *	<summary>
   *		Converts screen to world coordinates
@@ -103,7 +91,7 @@ stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Flo
 		new
 			Float: pX = ((screenX / cOnScreenX) - 0.5) * 2.0 * cInGameX,
 		#if defined GetPlayerCameraAspectRatio
-			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * (GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY),
+			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * ((GetPlayerCameraAspectRatio(playerid) > 1.375) ? cInGameYw : cInGameY),
 		#else
 			Float: pZ = ((screenY / cOnScreenY) - 0.5) * 2.0 * cInGameY,
 		#endif
@@ -114,8 +102,8 @@ stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Flo
 			Float: nYz,
 			Float: nZz
 		;
-		NormalizedCrossProduct(nXx, nYx, nZx, vX, vY, vZ, 0.0, 0.0, 1.0); // front vector (x) z vector
-		NormalizedCrossProduct(nXz, nYz, nZz, vX, vY, vZ, nXx, nYx, nZx); // front vector (x) right vector
+		STW_NormCrossProduct(nXx, nYx, nZx, vX, vY, vZ, 0.0, 0.0, 1.0); // front vector (x) z vector
+		STW_NormCrossProduct(nXz, nYz, nZz, vX, vY, vZ, nXx, nYx, nZx); // front vector (x) right vector
 
 		vX += nXx * pX + nXz * pZ;
 		vY += nYx * pX + nYz * pZ;
@@ -173,8 +161,8 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 	if(GetPlayerCameraPos(playerid, cX, cY, cZ)) {
 		GetPlayerCameraFrontVector(playerid, vX, vY, vZ);
 
-		NormalizedCrossProduct(nXx, nYx, nZx, vX, vY, vZ, 0.0, 0.0, 1.0);
-		NormalizedCrossProduct(nXz, nYz, nZz, vX, vY, vZ, nXx, nYx, nZx);
+		STW_NormCrossProduct(nXx, nYx, nZx, vX, vY, vZ, 0.0, 0.0, 1.0);
+		STW_NormCrossProduct(nXz, nYz, nZz, vX, vY, vZ, nXx, nYx, nZx);
 
 		screenX = ( vX * (x - cX) + vY * (y - cY) + vZ * (z - cZ) ) / ((vX * vX) + (vY * vY) + (vZ * vZ));
 
@@ -183,7 +171,7 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 
 		screenX = ((x / (cInGameX * 2.0)) + 0.5) * cOnScreenX;
 	#if defined GetPlayerCameraAspectRatio
-		screenY = ((z / ((GetPlayerCameraAspectRatio(playerid) > 1.375 ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
+		screenY = ((z / (((GetPlayerCameraAspectRatio(playerid) > 1.375) ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
 	#else
 		screenY = ((z / (cInGameY * 2.0)) + 0.5) * cOnScreenY;
 	#endif
