@@ -30,6 +30,7 @@
 
 #if 0
 	native ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Float: vY, & Float: vZ);
+	native ScreenToWorldEx(playerid, Float:distance, Float:screenX, Float:screenY, &Float:vX, &Float:vY, &Float:vZ);
 	native WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & Float: screenY);
 #endif
 
@@ -87,6 +88,7 @@ static stock STW_NormCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x
   *
   **/
 stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Float: vY, & Float: vZ) {
+	screenY = (screenY / 480.0) * cOnScreenY;
 	if((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY) && GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		new
 			Float: pX = ((screenX / cOnScreenX) - 0.5) * 2.0 * cInGameX,
@@ -112,6 +114,71 @@ stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Flo
 		return true;
 	}
 	return false;
+}
+
+/**
+  *	<summary>
+  *		Converts screen to world coordinates
+  *	</summary>
+  *
+  *	<param name="playerid">
+  *		The playerid
+  *	</param>
+  *	<param name="distance">
+  *		Distance factor
+  *	</param>
+  *	<param name="screenX">
+  *		X coordinate of the screen (0 - 640)
+  *	</param>
+  *	<param name="screenY">
+  *		Y coordinate of the screen (0 - 480)
+  *	</param>
+  *	<param name="vX">
+  *		Variable to store the X vector or coordinate
+  *	</param>
+  *	<param name="vY">
+  *		Variable to store the Y vector or coordinate
+  *	</param>
+  *	<param name="vZ">
+  *		Variable to store the Z vector or coordinate
+  *	</param>
+  *
+  *	<returns>
+  *		True  if the player is connected and if the coordinates are on the screen (1 for world coordinates, -1 for vectors)
+  *	</returns>
+  *
+  **/
+stock ScreenToWorldEx(playerid, Float:distance, Float:screenX, Float:screenY, &Float:vX, &Float:vY, &Float:vZ) {
+	new	Float:vectorX, Float:vectorY, Float:vectorZ, Float:endX, Float:endY, Float:endZ;
+	
+	GetPlayerCameraPos(playerid, endX, endY, endZ);
+	
+	if((0.0 <= screenX <= 640.0) && (0.0 <= screenY <= 480.0) && ScreenToWorld(playerid, screenX, screenY, vectorX, vectorY, vectorZ)) {
+		vectorX = endX + (vectorX * distance);
+		vectorY = endY + (vectorY * distance);
+		vectorZ = endZ + (vectorZ * distance);
+	
+	#if defined COLANDREAS
+		if(CA_RayCastLine(endX, endY, endZ, vectorX, vectorY, vectorZ+0.001, endX, endY, endZ)) {
+			vX = endX;
+			vY = endY;
+			vZ = endZ;
+			return 1;
+		}
+		else {
+			vX = vectorX;
+			vY = vectorY;
+			vZ = vectorZ;
+			return -1;
+		}
+	#else
+		vX = vectorX;
+		vY = vectorY;
+		vZ = vectorZ;
+		return -1;
+	#endif
+	}
+	return 0;
 }
 
 /**
