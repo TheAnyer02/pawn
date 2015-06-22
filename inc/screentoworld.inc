@@ -83,12 +83,11 @@ static stock STW_NormCrossProduct(& Float: x, & Float: y, & Float: z, Float: v1x
   *	</param>
   *
   *	<returns>
-  *		True if the coordinates are on the screen and if the player is connected
+  *		True if the coordinates are on the screen and if the player is connected (returns vector)
   *	</returns>
   *
   **/
 stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Float: vY, & Float: vZ) {
-	screenY = (screenY / 480.0) * cOnScreenY;
 	if((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY) && GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		new
 			Float: pX = ((screenX / cOnScreenX) - 0.5) * 2.0 * cInGameX,
@@ -144,41 +143,33 @@ stock ScreenToWorld(playerid, Float: screenX, Float: screenY, & Float: vX, & Flo
   *	</param>
   *
   *	<returns>
-  *		True  if the player is connected and if the coordinates are on the screen (1 for world coordinates, -1 for vectors)
+  *		True  if the player is connected and if the coordinates are on the screen (returns world coordinates)
   *	</returns>
   *
   **/
-stock ScreenToWorldEx(playerid, Float:distance, Float:screenX, Float:screenY, &Float:vX, &Float:vY, &Float:vZ) {
-	new	Float:vectorX, Float:vectorY, Float:vectorZ, Float:endX, Float:endY, Float:endZ;
-	
-	GetPlayerCameraPos(playerid, endX, endY, endZ);
-	
-	if((0.0 <= screenX <= 640.0) && (0.0 <= screenY <= 480.0) && ScreenToWorld(playerid, screenX, screenY, vectorX, vectorY, vectorZ)) {
-		vectorX = endX + (vectorX * distance);
-		vectorY = endY + (vectorY * distance);
-		vectorZ = endZ + (vectorZ * distance);
-	
+stock ScreenToWorldEx(playerid, Float: distance, Float: screenX, Float: screenY, & Float: wX, & Float: wY, & Float: wZ) {
+	if(ScreenToWorld(playerid, screenX, screenY, wX, wY, wZ)) {
+		new
+			Float: cX,
+			Float: cY,
+			Float: cZ
+		;
+		GetPlayerCameraPos(playerid, cX, cY, cZ);
+
+		wX = cX + (wX * distance);
+		wY = cY + (wY * distance);
+		wZ = cZ + (wZ * distance);
+
 	#if defined COLANDREAS
-		if(CA_RayCastLine(endX, endY, endZ, vectorX, vectorY, vectorZ+0.001, endX, endY, endZ)) {
-			vX = endX;
-			vY = endY;
-			vZ = endZ;
-			return 1;
+		if(CA_RayCastLine(cX, cY, cZ, wX, wY, wZ + 0.001, cX, cY, cZ)) {
+			wX = cX;
+			wY = cY;
+			wZ = cZ;
 		}
-		else {
-			vX = vectorX;
-			vY = vectorY;
-			vZ = vectorZ;
-			return -1;
-		}
-	#else
-		vX = vectorX;
-		vY = vectorY;
-		vZ = vectorZ;
-		return -1;
 	#endif
+		return true;
 	}
-	return 0;
+	return false;
 }
 
 /**
