@@ -161,11 +161,7 @@ stock ScreenToWorldEx(playerid, Float: distance, Float: screenX, Float: screenY,
 		wZ = cZ + (wZ * distance);
 
 	#if defined COLANDREAS
-		if(CA_RayCastLine(cX, cY, cZ, wX, wY, wZ + 0.001, cX, cY, cZ)) {
-			wX = cX;
-			wY = cY;
-			wZ = cZ;
-		}
+		return CA_RayCastLine(cX, cY, cZ, wX, wY, wZ + 0.001, wX, wY, wZ) + 1;
 	#endif
 		return true;
 	}
