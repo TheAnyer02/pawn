@@ -41,7 +41,7 @@ const
 	Float: cInGameY = 0.525,
 	Float: cInGameYw = 0.4, // Widescreen
 	Float: cOnScreenX = 640.0,
-	Float: cOnScreenY = 447.0
+	Float: cOnScreenY = 448.0
 ;
 
 ///	<summary>Gets and normalizes the CrossProduct of the vectors</summary>
