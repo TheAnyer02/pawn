@@ -222,7 +222,7 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 		// Distance, can be both positive and negative
 		screenX = ( vX * (x - cX) + vY * (y - cY) + vZ * (z - cZ) ) / ((vX * vX) + (vY * vY) + (vZ * vZ));
 
-		if((screenX & (1 << (cellbits - 1))) == 0) { // only positive values
+		if((_: screenX & (1 << (cellbits - 1))) == 0) { // only positive values
 			z = (((z - cZ) / screenX) - vZ) / nZz;
 			x = (((x - cX) / screenX) - vX - (z * nXz)) / nXx;
 
