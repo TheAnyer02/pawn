@@ -21,7 +21,9 @@
   *				Portions created by Initial Developer are Copyright (C) 2013
   *				the Initial Developer. All Rights Reserved.
   *			</ul><ul>
-  *				Credits to Crayder for pushing the widescreen detection
+  *				Credits:
+  *				 - Crayder: Widescreen detection
+  *				 - Ralfie: Bug in WorldToScreen
   *			</ul>
   *		</ul>
   *	</subsection>
@@ -217,19 +219,21 @@ stock WorldToScreen(playerid, Float: x, Float: y, Float: z, & Float: screenX, & 
 
 		STW_NormCrossProduct(nXx, nYx, nZx, vX, vY, vZ, 0.0, 0.0, 1.0);
 		STW_NormCrossProduct(nXz, nYz, nZz, vX, vY, vZ, nXx, nYx, nZx);
-
+		// Distance, can be both positive and negative
 		screenX = ( vX * (x - cX) + vY * (y - cY) + vZ * (z - cZ) ) / ((vX * vX) + (vY * vY) + (vZ * vZ));
 
-		z = (((z - cZ) / screenX) - vZ) / nZz;
-		x = (((x - cX) / screenX) - vX - (z * nXz)) / nXx;
+		if((screenX & (1 << (cellbits - 1))) == 0) { // only positive values
+			z = (((z - cZ) / screenX) - vZ) / nZz;
+			x = (((x - cX) / screenX) - vX - (z * nXz)) / nXx;
 
-		screenX = ((x / (cInGameX * 2.0)) + 0.5) * cOnScreenX;
-	#if defined GetPlayerCameraAspectRatio
-		screenY = ((z / (((GetPlayerCameraAspectRatio(playerid) > 1.375) ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
-	#else
-		screenY = ((z / (cInGameY * 2.0)) + 0.5) * cOnScreenY;
-	#endif
-		return ((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY));
+			screenX = ((x / (cInGameX * 2.0)) + 0.5) * cOnScreenX;
+		#if defined GetPlayerCameraAspectRatio
+			screenY = ((z / (((GetPlayerCameraAspectRatio(playerid) > 1.375) ? cInGameYw : cInGameY) * 2.0)) + 0.5) * cOnScreenY;
+		#else
+			screenY = ((z / (cInGameY * 2.0)) + 0.5) * cOnScreenY;
+		#endif
+			return ((0.0 <= screenX <= cOnScreenX) && (0.0 <= screenY <= cOnScreenY));
+		}
 	}
 	return false;
 }
