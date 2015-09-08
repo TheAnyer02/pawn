@@ -5,17 +5,20 @@
 
 #define NCMD:%1(%2) forward C%1(%2); public C%1(%2)
 
-#if defined ncmd_OnFilterScriptInit
-	forward ncmd_OnFilterScriptInit();
+#if defined ncmdz_OnFilterScriptInit
+	forward ncmdz_OnFilterScriptInit();
 #endif
-#if defined ncmd_OnPlayerCommandText
-	forward ncmd_OnPlayerCommandText(playerid, cmdtext[]);
+#if defined ncmdz_OnGameModeInit
+	forward ncmdz_OnGameModeInit();
+#endif
+#if defined ncmdz_OnPlayerCommandText
+	forward ncmdz_OnPlayerCommandText(playerid, cmdtext[]);
 #endif
 
 #tryinclude <nMain>
 
 #if defined _inc_nMain
-	Include<ncmd>;
+	Include<ncmd_z>;
 #endif
 
 #if defined OnPlayerCommandReceived
@@ -26,24 +29,24 @@
 #endif
 
 static const
-	ncmd_Public
+	ncmdz_Public
 ;
 #if defined OnPlayerCommandPerformed
 	static
-		ncmd_OPCP
+		ncmdz_OPCP
 	;
 #endif
 
-static ncmd_Init() {
+static ncmdz_Init() {
 	// Offset to the public table
 	#emit lctrl 1 // dat
 	#emit neg
 	#emit move.alt
 	#emit add.c 32 // publics
-	#emit stor.pri ncmd_Public
-	#emit lref.pri ncmd_Public
+	#emit stor.pri ncmdz_Public
+	#emit lref.pri ncmdz_Public
 	#emit add
-	#emit stor.pri ncmd_Public
+	#emit stor.pri ncmdz_Public
 
 	#if !defined OnPlayerCommandPerformed
 		return ;
@@ -52,44 +55,49 @@ static ncmd_Init() {
 	#endif
 
 	#emit shl.c.pri 3
-	#emit load.alt ncmd_Public
+	#emit load.alt ncmdz_Public
 	#emit add
-	#emit stor.pri ncmd_OPCP
-	#emit lref.pri ncmd_OPCP
+	#emit stor.pri ncmdz_Public
+	#emit lref.pri ncmdz_Public
 	#emit add.c 4
-	#emit stor.pri ncmd_OPCP
-	#emit retn
+	#emit stor.pri ncmdz_Public
+
+	#if defined OnPlayerCommandPerformed
+		ncmdz_OPCP = ncmdz_Public;
+	#endif
+
+	#emit stor.alt ncmdz_Public
 }
 
 public OnFilterScriptInit() {
-	#if defined ncmd_OnFilterScriptInit
-		ncmd_OnFilterScriptInit();
+	#if defined ncmdz_OnFilterScriptInit
+		ncmdz_OnFilterScriptInit();
 	#endif
 
-	ncmd_Init();
+	ncmdz_Init();
 }
 #if defined _ALS_OnFilterScriptInit
 	#undef OnFilterScriptInit
 #else
 	#define _ALS_OnFilterScriptInit
 #endif
-#define OnFilterScriptInit ncmd_OnFilterScriptInit
+#define OnFilterScriptInit ncmdz_OnFilterScriptInit
 
-main() {
-	#if defined ncmd_main
-		ncmd_main();
+public OnGameModeInit() {
+	#if defined ncmdz_OnGameModeInit
+		ncmdz_OnGameModeInit();
 	#endif
 
-	ncmd_Init();
+	ncmdz_Init();
 }
-#if defined _ALS_main
-	#undef main
+#if defined _ALS_OnGameModeInit
+	#undef OnGameModeInit
 #else
-	#define _ALS_main
+	#define _ALS_OnGameModeInit
 #endif
-#define main ncmd_main
+#define OnGameModeInit ncmdz_OnGameModeInit
 
-static ncmd_CallOPCPerformed(playerid, addr, cell) {
+static stock ncmdz_CallOPCPerformed(playerid, addr, cell) {
 	#pragma unused playerid, addr
 
 	static
@@ -107,7 +115,7 @@ static ncmd_CallOPCPerformed(playerid, addr, cell) {
 	// Preparing to call command
 	#emit load.s.pri cell
 	#emit shl.c.pri 3
-	#emit load.alt ncmd_Public
+	#emit load.alt ncmdz_Public
 	#emit add
 	#emit stor.pri idx
 	// Moving old frame down
@@ -138,7 +146,7 @@ static ncmd_CallOPCPerformed(playerid, addr, cell) {
 	#emit const.pri '/'
 	#emit stor.i
 	// Calling OnPlayerCommandPerformed
-	#emit load.pri ncmd_OPCP
+	#emit load.pri ncmdz_OPCP
 	#emit sctrl 6
 	// END
 }
@@ -179,7 +187,7 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
 	} {} // Getting funcidx of command
 	if((cell = funcidx(cmdtext)) != -1) {
 		#if defined OnPlayerCommandPerformed
-			ncmd_CallOPCPerformed(playerid, addr, cell);
+			ncmdz_CallOPCPerformed(playerid, addr, cell);
 		#endif
 
 		// Overwritting address of cmdtext
@@ -188,7 +196,7 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
 		// Calling command
 		#emit load.pri cell
 		#emit shl.c.pri 3
-		#emit load.alt ncmd_Public
+		#emit load.alt ncmdz_Public
 		#emit add
 		#emit stor.pri cell
 		#emit lref.pri cell
@@ -205,4 +213,4 @@ public OnPlayerCommandText(playerid, cmdtext[]) {
 #else
 	#define _ALS_OnPlayerCommandText
 #endif
-#define OnPlayerCommandText ncmd_OnPlayerCommandText
+#define OnPlayerCommandText ncmdz_OnPlayerCommandText
