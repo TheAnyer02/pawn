@@ -1,51 +1,35 @@
-/*--------------------------------------------------------------------------------------------------
-	Function:
-		GetPlayerCameraWeaponVector
-	Params:
-		playerid - Player to get the weapon vector of
-		& Float: vX - x Vector variable
-		& Float: vY - y Vector variable
-		& Float: vZ - z Vector variable
-	Return:
-		If the player is connected
-	Notes:
-		Gets the weapon vector of the player
-
-native GetPlayerCameraWeaponVector(playerid, & Float: vX, & Float: vY, & Float: vZ);
---------------------------------------------------------------------------------------------------*/
-
-stock GetPlayerCameraWeaponVector(playerid, & Float: vX, & Float: vY, & Float: vZ) {
-	// version 3 - http://forum.sa-mp.com/showthread.php?t=276490
+//n3d @ 2016 v5 | valid for vZ > -0.6 | http://forum.sa-mp.com/showthread.php?t=276490
+WO_GetPlayerCameraWeaponVector(playerid, & Float: vX, & Float: vY, & Float: vZ) {
 	if(GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		switch(GetPlayerWeapon(playerid)) {
 			case WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER: {
 				return true;
 			}
 			case WEAPON_RIFLE: {
-				new
-					Float: angle = -(atan2(vX, vY) + 15.642194)
-				;
-				vX += floatcos(angle, degrees) * 0.019619;
-				vY += floatsin(angle, degrees) * 0.019619;
-				vZ = floatsin(asin(vZ) + 2.7, degrees);
+				vY = atan2(vX, vY) + 5.0 * floatpower(vZ, 6.0) + 1.1;
+				vZ = asin(vZ) - 0.0163 * vZ + 2.0158;
+
+				vX = floatsin(vY, degrees) * floatcos(vZ, degrees);
+				vY = floatcos(vY, degrees) * floatcos(vZ, degrees);
+				vZ = floatsin(vZ, degrees);
 				return true;
 			}
 			case WEAPON_AK47, WEAPON_M4: {
-				new
-					Float: angle = -(atan2(vX, vY) + 15.135845)
-				;
-				vX += floatcos(angle, degrees) * 0.028902;
-				vY += floatsin(angle, degrees) * 0.028902;
-				vZ = floatsin(asin(vZ) + 4.0, degrees);
+				vY = atan2(vX, vY) + 3.3 * floatpower(vZ, 4.0) + 1.6;
+				vZ = asin(vZ) - 0.0582 * vZ + 3.0083;
+
+				vX = floatsin(vY, degrees) * floatcos(vZ, degrees);
+				vY = floatcos(vY, degrees) * floatcos(vZ, degrees);
+				vZ = floatsin(vZ, degrees);
 				return true;
 			}
 			case WEAPON_COLT45 .. WEAPON_MP5, WEAPON_TEC9, WEAPON_FLAMETHROWER, WEAPON_MINIGUN: {
-				new
-					Float: angle = -(atan2(vX, vY) + 11.652412)
-				;
-				vX += floatcos(angle, degrees) * 0.042624;
-				vY += floatsin(angle, degrees) * 0.042624;
-				vZ = floatsin(asin(vZ) + 6.0, degrees);
+				vY = atan2(vX, vY) + 4.25 * floatpower(vZ + 0.05, 4.0) + 2.4;
+				vZ = asin(vZ) - 0.1347 * vZ + 4.5065;
+
+				vX = floatsin(vY, degrees) * floatcos(vZ, degrees);
+				vY = floatcos(vY, degrees) * floatcos(vZ, degrees);
+				vZ = floatsin(vZ, degrees);
 				return true;
 			}
 		}
