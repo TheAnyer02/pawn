@@ -1,5 +1,5 @@
 //n3d @ 2016 v5 | valid for vZ > -0.6 / xRot > -36 dgerees | http://forum.sa-mp.com/showthread.php?t=276490
-WO_GetPlayerCameraWeaponVector(playerid, & Float: vX, & Float: vY, & Float: vZ) {
+stock GetPlayerCameraWeaponVector(playerid, & Float: vX, & Float: vY, & Float: vZ) {
 	if(GetPlayerCameraFrontVector(playerid, vX, vY, vZ)) {
 		switch(GetPlayerWeapon(playerid)) {
 			case WEAPON_SNIPER, WEAPON_ROCKETLAUNCHER, WEAPON_HEATSEEKER: {
