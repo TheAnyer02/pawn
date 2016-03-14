@@ -10,6 +10,7 @@ enum BigInt {}
 	native BigIntegerGetString(BigInt: int[], tmp[], size = sizeof int, length = sizeof tmp);
 	native BigIntegerSetBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerSet(BigInt: int[], value, size = sizeof int);
+	native BigIntegerSetBigDec(BigInt: int[], size, ...);
 	native BigIntegerAddBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerAdd(BigInt: int[], value, size = sizeof int);
 	native BigIntegerShiftLeft(BigInt: int[], shl, size = sizeof int);
@@ -157,6 +158,56 @@ stock BigIntegerSet(BigInt: int[], value, size = sizeof int) {
 	;
 	tmp[0] = BigInt: value;
 	BigIntegerSetBig(int, tmp, size);
+}
+
+stock BigIntegerSetBigDec(BigInt: int[], size, ...) {
+	new // only use numbers up to 9 digits, e.g.: ..., 53, 687_091_175); // 53'687'091'175
+		args = numargs()
+	;
+	if(args < 3) {
+		return ;
+	}
+	new
+		i,
+		idx,
+		pointer[][] = {{}}
+	;
+	BigIntegerSet(int, 0, size);
+
+	for(i = args; --i > 1; ) {
+		idx = getarg(i);
+
+		#emit push.s idx
+
+		idx =
+			(idx >= 100000000) ? 1000000000 :
+			(idx >= 10000000) ? 100000000 :
+			(idx >= 1000000) ? 10000000 :
+			(idx >= 100000) ? 1000000 :
+			(idx >= 10000) ? 100000 :
+			(idx >= 1000) ? 10000 :
+			(idx >= 100) ? 1000 :
+			(idx >= 10) ? 100 : 10
+		;
+		#emit push.s idx
+	} {} // setting pointer
+	#emit lctrl 4
+	#emit addr.alt pointer
+	#emit sub
+	#emit stor.i
+
+	args = (args - 2) << 1;
+
+	for(i = 1; i < args; i += 2) {
+		BigIntegerAdd(int, pointer[0][i], size);
+
+		for(idx = i + 1; idx < args; idx += 2) {
+			BigIntegerMul(int, pointer[0][idx], size);
+		}
+	}
+	#emit lctrl 5
+	#emit sctrl 4
+	#emit retn
 }
 
 static stock _BigIntegerAdd(& BigInt: int, value) {
