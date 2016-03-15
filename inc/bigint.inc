@@ -495,7 +495,8 @@ stock BigIntegerMulS(BigInt: int[], value, size = sizeof int) {
 
 stock BigIntegerDivBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value) {
 	const
-		cNeg = 1 << (cellbits - 1)
+		cMask = cellbits - 1,
+		cNeg = 1 << cMask
 	;
 	new
 		negative = isize,
@@ -541,9 +542,8 @@ stock BigIntegerDivBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize
 				}
 				BigIntegerNeg(int, isize);
 			}
-			vsize = j + 1;
+			vlen += 1 + j * cellbits;
 			j = isize;
-			vlen++;
 
 			while(--j >= 0) {
 				ilen = 0;
@@ -570,21 +570,15 @@ stock BigIntegerDivBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize
 					ilen += 1;
 				}
 				if(ilen || idx) { // found first bit in int
-					isize = j + 1;
-					ilen++;
+					ilen += 1 + j * cellbits;
+					isize = (ilen + 1) / cellbits;
+					vsize = (vlen + 1) / cellbits;
 
-					if(ilen >= (cellbits - 1)) {
-						isize++;
-					}
-					if(vlen >= (cellbits - 1)) {
-						vsize++;
-					}
+					BigIntegerShiftLeft(int, cMask - ((ilen + 1) & cMask), isize);
+					BigIntegerShiftLeft(value, cMask - ((vlen + 1) & cMask), vsize);
+
+					vlen = ilen -= vlen;
 					idx = min(isize, vsize);
-
-					BigIntegerShiftLeft(int, (cellbits - 1) - ((ilen + 1) & 0x1F), isize);
-					BigIntegerShiftLeft(value, (cellbits - 1) - ((vlen + 1) & 0x1F), vsize);
-
-					ilen += j * cellbits - vlen;
 
 					for(j = 1; j <= idx; ++j) {
 						if(int[isize - j] < value[vsize - j]) {
@@ -596,7 +590,7 @@ stock BigIntegerDivBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize
 							break;
 						}
 					}
-					for(vlen = ilen, j = 1; j <= idx; ++j) {
+					for(j = 1; j <= idx; ++j) {
 						int[isize - j] -= value[vsize - j];
 					}
 					#emit push.c 1 // temp save into the stack, int is still used
