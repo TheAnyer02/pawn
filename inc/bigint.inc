@@ -5,12 +5,11 @@
 enum BigInt {}
 
 /*
-	native *Public*();
 	native BigIntegerPrint(BigInt: int[], size = sizeof int);
 	native BigIntegerGetString(BigInt: int[], tmp[], size = sizeof int, length = sizeof tmp);
 	native BigIntegerSetBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerSet(BigInt: int[], value, size = sizeof int);
-	native BigIntegerSetBigDec(BigInt: int[], size, ...);
+	native BigIntegerSetString(BigInt: int[], value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerAddBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerAdd(BigInt: int[], value, size = sizeof int);
 	native BigIntegerShiftLeft(BigInt: int[], shl, size = sizeof int);
@@ -22,11 +21,9 @@ enum BigInt {}
 	native BigIntegerDivBig(BigInt: int[], BigInt: value[], isize = sizeof int, vsize = sizeof value);
 	native BigIntegerDiv(BigInt: int[], value, size = sizeof int);
 	native ();
-	native *Obsolete*();
 	native BigIntegerMulS(BigInt: int[], value, size = sizeof int);
 	native BigIntegerDivS(BigInt: int[], value, size = sizeof int);
 	native ();
-	native *Privat*();
 	native _BigIntegerNormBCD(& bcd);
 	native _BigIntegerAdd(& BigInt: int, value);
 */
@@ -160,54 +157,30 @@ stock BigIntegerSet(BigInt: int[], value, size = sizeof int) {
 	BigIntegerSetBig(int, tmp, size);
 }
 
-stock BigIntegerSetBigDec(BigInt: int[], size, ...) {
-	new // only use numbers up to 9 digits, e.g.: ..., 53, 687_091_175); // 53'687'091'175
-		args = numargs()
-	;
-	if(args < 3) {
-		return ;
-	}
+stock BigIntegerSetString(BigInt: int[], value[], isize = sizeof int, vsize = sizeof value) {
 	new
-		i,
-		idx,
-		pointer[][] = {{}}
+		count
 	;
-	BigIntegerSet(int, 0, size);
+	BigIntegerSet(int, 0, isize);
 
-	for(i = args; --i > 1; ) {
-		idx = getarg(i);
+	for(vsize--; vsize >= 9; count++) {
+		vsize -= 9;
 
-		#emit push.s idx
+		value[vsize + 1] = strval(value[vsize]);
+		value[vsize] = EOS;
+	}
+	if(vsize) {
+		BigIntegerAdd(int, strval(value), isize);
 
-		idx =
-			(idx >= 100000000) ? 1000000000 :
-			(idx >= 10000000) ? 100000000 :
-			(idx >= 1000000) ? 10000000 :
-			(idx >= 100000) ? 1000000 :
-			(idx >= 10000) ? 100000 :
-			(idx >= 1000) ? 10000 :
-			(idx >= 100) ? 1000 :
-			(idx >= 10) ? 100 : 10
-		;
-		#emit push.s idx
-	} {} // setting pointer
-	#emit lctrl 4
-	#emit addr.alt pointer
-	#emit sub
-	#emit stor.i
-
-	args = (args - 2) << 1;
-
-	for(i = 1; i < args; i += 2) {
-		BigIntegerAdd(int, pointer[0][i], size);
-
-		for(idx = i + 1; idx < args; idx += 2) {
-			BigIntegerMul(int, pointer[0][idx], size);
+		if(count) {
+			BigIntegerMul(int, 1_000_000_000, isize);
 		}
 	}
-	#emit lctrl 5
-	#emit sctrl 4
-	#emit retn
+	for(vsize++; --count > 0; vsize += 9) {
+		BigIntegerAdd(int, value[vsize], isize);
+		BigIntegerMul(int, 1_000_000_000, isize);
+	}
+	BigIntegerAdd(int, value[vsize], isize);
 }
 
 static stock _BigIntegerAdd(& BigInt: int, value) {
@@ -708,4 +681,56 @@ stock BigIntegerDivS(BigInt: int[], value, size = sizeof int) {
 		int[j - 1] = BigInt: int1;
 	}
 	int[j - 1] = BigInt: int2;
+}
+
+// -------------------
+
+stock BigInt: BigIntegerGetAddress(BigInt: ...) {
+	#emit load.s.pri 12
+	#emit retn
+
+	return BigInt: 0;
+}
+
+#define BigIntegerInit(%0,%1) new BigInt: _%0_data[%1], BigInt: _%0_size = BigInt: %1, BigInt: %0 = BigIntegerGetAddress(%0, _%0_size, _%0_data)
+
+native Float:operator*(Float:oper1, Float:oper2) = floatmul;
+native Float:operator/(Float:oper1, Float:oper2) = floatdiv;
+native Float:operator+(Float:oper1, Float:oper2) = floatadd;
+native Float:operator-(Float:oper1, Float:oper2) = floatsub;
+
+stock BigInt: operator=(oper) {
+	printf("=%d", oper);
+}
+
+stock Float:operator++(Float:oper)
+    return oper+1.0;
+	
+public OnFilterScriptInit() {
+	new
+		BigInt: x[5],
+		BigInt: y[5],
+		BigInt: int[3],
+		tmp[128],
+		value
+	;
+	BigIntegerInit(z, 5);
+
+	BigIntegerSetString(x, "7612058254738945");
+	BigIntegerSetString(y, "9263591128439081");
+	BigIntegerMulBig(x, y);
+	BigIntegerGetString(x, tmp);
+	BigIntegerPrint(x);
+	print(tmp);
+
+	BigIntegerAdd(int, value);
+	BigIntegerShiftLeft(int, value);
+	BigIntegerShiftRightL(int, value);
+	BigIntegerShiftRight(int, value);
+	BigIntegerNeg(int);
+	BigIntegerMul(int, value);
+	BigIntegerDiv(int, value);
+
+	BigIntegerMulS(int, value);
+	BigIntegerDivS(int, value);
 }
