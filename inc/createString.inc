@@ -40,12 +40,10 @@ stock CreateString(...) {
 /*
 new gPointer[][] = {{}};
 
-new gtmp[] = "XXX";
 new Text1[] = "Hello";
 new Text2[] = "World";
 
 Init() {
-	gtmp[3] = EOS;
 	CreateString(Text1, ' ', Text2);
 	CreateString(gPointer, "Hi", ' ', "Ho!");
 
