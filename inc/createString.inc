@@ -1,6 +1,6 @@
 // Nero_3D, improved version from catstr
 
-stock CreateString(...) {
+stock CreateString(...) { asdfasdf
     new
         last,
 		first
