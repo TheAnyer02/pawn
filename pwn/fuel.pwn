@@ -45,7 +45,7 @@ public OnFilterScriptInit() {
 			}
 		}
 	}
-	gTimer = SetTimer("ConsumeFuel", 1000, true); // 2 seconds instead of 10
+	gTimer = SetTimer("ConsumeFuel", 1000, true); // 1 seconds
 } // otherwise the player could drive in circles and have a distance of 0
 
 public OnFilterScriptExit() {
@@ -89,7 +89,7 @@ public ConsumeFuel() {
 	for(i = 0; i < MAX_PLAYERS; i++) {
 		if(GetPlayerState(i) == PLAYER_STATE_DRIVER) {
 			vid = GetPlayerVehicleID(i);
-			speed = GetVehicleSpeed(vid); // max speed nrg = 
+			speed = GetVehicleSpeed(vid); // max speed nrg ~ 1.1, so I guess 1.0 * 180.0 as max speed is fine
 			dist = GetVehicleDistanceFromPoint(vid, VehicleLastCoords[i][0], VehicleLastCoords[i][1], VehicleLastCoords[i][2]);
 			GetVehiclePos(vid, VehicleLastCoords[i][0], VehicleLastCoords[i][1], VehicleLastCoords[i][2]);
 
