@@ -92,9 +92,6 @@ public ConsumeFuel() {
 			speed = GetVehicleSpeed(vid); // max speed nrg = 
 			dist = GetVehicleDistanceFromPoint(vid, VehicleLastCoords[i][0], VehicleLastCoords[i][1], VehicleLastCoords[i][2]);
 			GetVehiclePos(vid, VehicleLastCoords[i][0], VehicleLastCoords[i][1], VehicleLastCoords[i][2]);
-			new tmp[32];
-			format(tmp, sizeof tmp, "%f", speed);
-			GameTextForPlayer(i, tmp, 999, 4);
 
 			Fuel[vid] -= speed / 90.0 * dist / 1000.0 + 1.0 / 60.0; // speed / 90.0 * 1km / 1fuel + 1fuel / 1minute
 
