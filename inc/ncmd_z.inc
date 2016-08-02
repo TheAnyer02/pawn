@@ -122,7 +122,7 @@ static stock ncmdz_CallOPCPerformed(playerid, addr, cell) {
 	#emit load.s.alt 0
 	#emit const.pri 4
 	#emit sub.alt
-	#emit stor.s.pri 0
+//	#emit stor.s.pri 0
 	#emit xchg
 	#emit movs 20
 	// Fixing param count #1
