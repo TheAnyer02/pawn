@@ -2,7 +2,8 @@
  * Rotations.inc by Nero_3D (C) 2016
  * 
  * Contact:
- *     http://forum.sa-mp.com/member.php?u=9765
+ *     E-Mail: shiska@gmx.de
+ *     SA-MP forum: http://forum.sa-mp.com/member.php?u=9765
  *
  * Licence: MPL 2.0
  *     This Source Code Form is subject to the terms of the Mozilla Public
