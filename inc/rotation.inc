@@ -14,7 +14,7 @@
  *   1.0 (14.08.2016)
  *     - Release
  */
-
+ 
 #if !defined _inc_a_samp
 	#error Cant be compiled without a_samp
 #endif
@@ -44,6 +44,28 @@ enum eulermode {
 }
 
 const eulermode: euler_default = euler_zxy;
+
+/*
+native 
+native GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y, Float: z)
+native GetRotationMatrixFromEuler(Float: matrix[][], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_default)
+native GetRotationMatrixFromAxisAngle(Float: matrix[][], Float: angle, Float: aX, Float: aY, Float: aZ)
+native GetQuatFromMatrix(Float: matrix[][], & Float: w, & Float: x, & Float: y, & Float: z)
+native GetQuatFromEuler(Float: rX, Float: rY, Float: rZ, & Float: w, & Float: x, & Float: y, & Float: z, eulermode: mode = euler_default)
+native GetQuatFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: w, & Float: x, & Float: y, & Float: z)
+native GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
+native GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
+native GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
+native GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
+native GetAxisAngleFromMatrix(Float: matrix[3][3], & Float: angle, & Float: aX, & Float: aY, & Float: aZ)
+native GetAxisAngleFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: angle, & Float: aX, & Float: aY, & Float: aZ)
+native GetAxisAngleFromEuler(Float: rX, Float: rY, Float: rZ, & Float: angle, & Float: aX, & Float: aY, & Float: aZ, eulermode: mode = euler_default)
+native MatrixRotate(Float: matrix[][], Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
+native QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
+native EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_default)
+native AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
+native
+*/
 
 stock GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y, Float: z) {
 	new
