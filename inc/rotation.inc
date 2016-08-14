@@ -807,10 +807,8 @@ stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Fl
 }
 
 stock GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
-	new Float: matrix[3][3]; // to much work I guess
-	// but way slower (~half speed) than an optimised version with 144 cases
-	GetRotationMatrixFromEuler(matrix, oX, oY, oZ, omode);
-	GetEulerFromMatrix(matrix, rX, rY, rZ, mode);
+	GetQuatFromEuler(oX, oY, oZ, rX, oX, oY, oZ, omode);
+	GetEulerFromQuat(rX, oX, oY, oZ, rX, rY, rZ, mode);
 }
 
 stock GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
@@ -879,10 +877,9 @@ stock QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, F
 }
 
 stock EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_default) {
-	new Float: matrix[3][3]; // saddly I couldn't find a way to rotate euler angles without matrices, is there even a way?
-
-	GetRotationMatrixFromEuler(matrix, rX, rY, rZ, mode);
-	MatrixRotate(matrix, oX, oY, oZ, X, Y, Z);
+	// saddly I couldn't find a way to rotate euler angles without matrices, is there even a way?
+	GetQuatFromEuler(rX, rY, rZ, Float: mode, rX, rY, rZ, mode);
+	QuatRotate(Float: mode, rX, rY, rZ, oX, oY, oZ, X, Y, Z);
 }
 
 stock AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z) {
