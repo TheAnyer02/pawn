@@ -13,7 +13,14 @@
  * Version:
  *   1.0 (14.08.2016)
  *     - Release
+ *   2.0 (07.01.2017)
+ *     - Translation function added for Rotation Matrix
+ *     - euler_default renamed to euler_samp
+ *     - additional translate parameter 'oT' in MatrixRotate
  */
+ 
+ // Right to left - absoulte Rotation (active)
+ // Left to right - relative Rotation (passive)
  
 #if !defined _inc_a_samp
 	#error Cant be compiled without a_samp
@@ -39,35 +46,199 @@ enum eulermode {
 	euler_xyz,
 	euler_yxz,
 	euler_yzx,
-	euler_zyx, // pitch roll yaw
-	euler_zxy // sa-mp
+	euler_zyx,
+	euler_zxy // sa-mp // yaw pitch roll
 }
 
-const eulermode: euler_default = euler_zxy;
+const eulermode: euler_samp = euler_zxy;
 
 /*
-native 
-native GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y, Float: z)
-native GetRotationMatrixFromEuler(Float: matrix[][], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_default)
-native GetRotationMatrixFromAxisAngle(Float: matrix[][], Float: angle, Float: aX, Float: aY, Float: aZ)
+native
+native RotMatrixMatrixAroundRelPoint(Float: matrix1[4][4], Float: oX, Float: oY, Float: oZ, Float: matrix2[4][4])
+native RotMatrixQuatAroundRelPoint(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: w, Float: x, Float: y, Float: z)
+native RotMatrixEulerAroundRelPoint(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp)
+native RotMatrixAxisAroundRelPoint(Float: matrix1[4][4], Float: oX, Float: oY, Float: oZ, Float: angle, Float: aX, Float: aY, Float: aZ)
+native RotMatrixMatrixAroundPoint(Float: matrix1[4][4], Float: x, Float: y, Float: z, Float: matrix2[4][4])
+native RotMatrixQuatAroundPoint(Float: matrix[4][4], Float: x, Float: y, Float: z, Float: w, Float: qX, Float: qY, Float: qZ)
+native RotMatrixEulerAroundPoint(Float: matrix[4][4], Float: x, Float: y, Float: z, Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp)
+native RotMatrixAxisAroundPoint(Float: matrix1[4][4], Float: x, Float: y, Float: z, Float: angle, Float: aX, Float: aY, Float: aZ)
+native TranslateMatrix(Float: matrix[4][4], Float: x, Float: y, Float: z)
+native RotateMatrixWithMatrix(Float: matrix1[4][4], Float: matrix2[4][4])
+native RotateMatrixWithQuat(Float: matrix[4][4], Float: w, Float: x, Float: y, Float: z)
+native RotateMatrixWithEuler(Float: matrix[4][4], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp)
+native RotateMatrixWithAxisAngle(Float: matrix[4][4], Float: angle, Float: aX, Float: aY, Float: aZ)
+native GetTranslationMatrix(Float: matrix[4][4], Float: x, Float: y, Float: z)
+
+native GetRotationMatrixFromQuat(Float: matrix[4][4], Float: w, Float: x, Float: y, Float: z)
+native GetRotationMatrixFromEuler(Float: matrix[4][4], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp)
+native GetRotationMatrixFromAxisAngle(Float: matrix[4][4], Float: angle, Float: aX, Float: aY, Float: aZ)
 native GetQuatFromMatrix(Float: matrix[][], & Float: w, & Float: x, & Float: y, & Float: z)
-native GetQuatFromEuler(Float: rX, Float: rY, Float: rZ, & Float: w, & Float: x, & Float: y, & Float: z, eulermode: mode = euler_default)
+native GetQuatFromEuler(Float: rX, Float: rY, Float: rZ, & Float: w, & Float: x, & Float: y, & Float: z, eulermode: mode = euler_samp)
 native GetQuatFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: w, & Float: x, & Float: y, & Float: z)
-native GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
-native GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
-native GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
-native GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default)
+native GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp)
+native GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp)
+native GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp)
+native GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp)
 native GetAxisAngleFromMatrix(Float: matrix[3][3], & Float: angle, & Float: aX, & Float: aY, & Float: aZ)
 native GetAxisAngleFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: angle, & Float: aX, & Float: aY, & Float: aZ)
-native GetAxisAngleFromEuler(Float: rX, Float: rY, Float: rZ, & Float: angle, & Float: aX, & Float: aY, & Float: aZ, eulermode: mode = euler_default)
-native MatrixRotate(Float: matrix[][], Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
+native GetAxisAngleFromEuler(Float: rX, Float: rY, Float: rZ, & Float: angle, & Float: aX, & Float: aY, & Float: aZ, eulermode: mode = euler_samp)
+native MatrixRotate(Float: matrix[][], Float: oX, Float: oY, Float: oZ, Float: oT, & Float: X, & Float: Y, & Float: Z)
 native QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
-native EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_default)
+native EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_samp)
 native AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
 native
 */
 
-stock GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y, Float: z) {
+stock RotMatrixMatrixAroundRelPoint(Float: matrix1[4][4], Float: oX, Float: oY, Float: oZ, Float: matrix2[4][4]) {
+	new
+		Float: X,
+		Float: Y,
+		Float: Z
+	;
+	MatrixRotate(matrix1, oX, oY, oZ, 1.0, X, Y, Z);
+	RotMatrixMatrixAroundPoint(matrix1, X, Y, Z, matrix2);
+}
+
+stock RotMatrixQuatAroundRelPoint(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: w, Float: x, Float: y, Float: z) {
+	new
+		Float: X,
+		Float: Y,
+		Float: Z
+	;
+	MatrixRotate(matrix, oX, oY, oZ, 1.0, X, Y, Z);
+	RotMatrixQuatAroundPoint(matrix, X, Y, Z, w, x, y, z);
+}
+
+stock RotMatrixEulerAroundRelPoint(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp) {
+	new
+		Float: X,
+		Float: Y,
+		Float: Z
+	;
+	MatrixRotate(matrix, oX, oY, oZ, 1.0, X, Y, Z);
+	RotMatrixEulerAroundPoint(matrix, X, Y, Z, rX, rY, rZ, mode);
+}
+
+stock RotMatrixAxisAroundRelPoint(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: angle, Float: aX, Float: aY, Float: aZ) {
+	new
+		Float: X,
+		Float: Y,
+		Float: Z
+	;
+	MatrixRotate(matrix, oX, oY, oZ, 1.0, X, Y, Z);
+	RotMatrixAxisAroundPoint(matrix, X, Y, Z, angle, aX, aY, aZ);
+}
+
+stock RotMatrixMatrixAroundPoint(Float: matrix1[4][4], Float: x, Float: y, Float: z, Float: matrix2[4][4]) {
+	TranslateMatrix(matrix1, -x, -y, -z);
+	RotateMatrixWithMatrix(matrix1, matrix2);
+	TranslateMatrix(matrix1, x, y, z);
+}
+
+stock RotMatrixQuatAroundPoint(Float: matrix[4][4], Float: x, Float: y, Float: z, Float: w, Float: qX, Float: qY, Float: qZ) {
+	TranslateMatrix(matrix, -x, -y, -z);
+	RotateMatrixWithQuat(matrix, w, qX, qY, qZ);
+	TranslateMatrix(matrix, x, y, z);
+}
+
+stock RotMatrixEulerAroundPoint(Float: matrix[4][4], Float: x, Float: y, Float: z, Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp) {
+	TranslateMatrix(matrix, -x, -y, -z);
+	RotateMatrixWithEuler(matrix, rX, rY, rZ, mode);
+	TranslateMatrix(matrix, x, y, z);
+}
+
+stock RotMatrixAxisAroundPoint(Float: matrix1[4][4], Float: x, Float: y, Float: z, Float: angle, Float: aX, Float: aY, Float: aZ) {
+	TranslateMatrix(matrix, -x, -y, -z);
+	RotateMatrixWithAxisAngle(matrix, angle, aX, aY, aZ);
+	TranslateMatrix(matrix, x, y, z);
+}
+
+stock TranslateMatrix(Float: matrix[4][4], Float: x, Float: y, Float: z) {
+	matrix[0][3] += x; // impressive!
+	matrix[1][3] += y;
+	matrix[2][3] += z;
+}
+
+stock RotateMatrixWithMatrix(Float: matrix1[4][4], Float: matrix2[4][4]) { // matrix1 = matrix2 * matrix1
+	static // unroll loop for speed
+		Float: m100, Float: m101, Float: m102, Float: m103,
+		Float: m110, Float: m111, Float: m112, Float: m113,
+		Float: m120, Float: m121, Float: m122, Float: m123,
+		Float: m130, Float: m131, Float: m132, Float: m133,
+		Float: m200, Float: m201, Float: m202, Float: m203,
+		Float: m210, Float: m211, Float: m212, Float: m213,
+		Float: m220, Float: m221, Float: m222, Float: m223,
+		Float: m230, Float: m231, Float: m232, Float: m233
+	;
+	#pragma unused m130, m131, m132, m133, m230, m231, m232, m233
+	// fill variables
+	#emit load.s.pri matrix1
+	#emit add.c 16
+	#emit const.alt m200 // right
+	#emit movs 64
+	#emit load.s.pri matrix2
+	#emit add.c 16
+	#emit const.alt m100 // left
+	#emit movs 64
+	// optimsized for third line 0.0, 0.0, 0.0, 1.0
+	matrix1[0][0] = m100 * m200 + m101 * m210 + m102 * m220;
+	matrix1[0][1] = m100 * m201 + m101 * m211 + m102 * m221;
+	matrix1[0][2] = m100 * m202 + m101 * m212 + m102 * m222;
+	matrix1[0][3] = m100 * m203 + m101 * m213 + m102 * m223 + m103;
+	matrix1[1][0] = m110 * m200 + m111 * m210 + m112 * m220;
+	matrix1[1][1] = m110 * m201 + m111 * m211 + m112 * m221;
+	matrix1[1][2] = m110 * m202 + m111 * m212 + m112 * m222;
+	matrix1[1][3] = m110 * m203 + m111 * m213 + m112 * m223 + m113;
+	matrix1[2][0] = m120 * m200 + m121 * m210 + m122 * m220;
+	matrix1[2][1] = m120 * m201 + m121 * m211 + m122 * m221;
+	matrix1[2][2] = m120 * m202 + m121 * m212 + m122 * m222;
+	matrix1[2][3] = m120 * m203 + m121 * m213 + m122 * m223 + m123;
+}
+
+stock RotateMatrixWithQuat(Float: matrix[4][4], Float: w, Float: x, Float: y, Float: z) {
+	new
+		Float: tmp[4][4]
+	;
+	GetRotationMatrixFromQuat(tmp, w, x, y, z);
+	RotateMatrixWithMatrix(matrix, tmp);
+}
+
+stock RotateMatrixWithEuler(Float: matrix[4][4], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp) {
+	new
+		Float: tmp[4][4]
+	;
+	GetRotationMatrixFromEuler(tmp, rX, rY, rZ, mode);
+	RotateMatrixWithMatrix(matrix, tmp);
+}
+
+stock RotateMatrixWithAxisAngle(Float: matrix[4][4], Float: angle, Float: aX, Float: aY, Float: aZ) {
+	new
+		Float: tmp[4][4]
+	;
+	GetRotationMatrixFromAxisAngle(tmp, angle, aX, aY, aZ);
+	RotateMatrixWithMatrix(matrix, tmp);
+}
+
+stock GetTranslationMatrix(Float: matrix[4][4], Float: x, Float: y, Float: z) {
+	matrix[0][0] = 1.0;
+	matrix[0][1] = 0.0;
+	matrix[0][2] = 0.0;
+	matrix[0][3] = x;
+	matrix[1][0] = 0.0;
+	matrix[1][1] = 1.0;
+	matrix[1][2] = 0.0;
+	matrix[1][3] = y;
+	matrix[2][0] = 0.0;
+	matrix[2][1] = 0.0;
+ 	matrix[2][2] = 1.0;
+	matrix[2][3] = z;
+	matrix[3][0] = 0.0;
+	matrix[3][1] = 0.0;
+	matrix[3][2] = 0.0;
+	matrix[3][3] = 1.0;
+}
+
+stock GetRotationMatrixFromQuat(Float: matrix[4][4], Float: w, Float: x, Float: y, Float: z) {
 	new
 		Float: x2 = x * x,
 	 	Float: y2 = y * y,
@@ -80,6 +251,7 @@ stock GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y,
 		Float: wy = 2.0 * w * y,
 		Float: wz = 2.0 * w * z;
 
+	// rotation
 	matrix[0][0] = w2 + x2 - y2 - z2;
 	matrix[0][1] = xy + wz;
 	matrix[0][2] = xz - wy;
@@ -89,9 +261,17 @@ stock GetRotationMatrixFromQuat(Float: matrix[][], Float: w, Float: x, Float: y,
 	matrix[2][0] = xz + wy;
 	matrix[2][1] = yz - wx;
  	matrix[2][2] = w2 - x2 - y2 + z2;
+	// translation
+	matrix[0][3] = 0.0;
+	matrix[1][3] = 0.0;
+	matrix[2][3] = 0.0;
+	matrix[3][0] = 0.0;
+	matrix[3][1] = 0.0;
+	matrix[3][2] = 0.0;
+	matrix[3][3] = 1.0;
 }
 
-stock GetRotationMatrixFromEuler(Float: matrix[][], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_default) {
+stock GetRotationMatrixFromEuler(Float: matrix[4][4], Float: rX, Float: rY, Float: rZ, eulermode: mode = euler_samp) {
 	new // could be done with matrix multiplication but would be slower
 		Float: cosX = floatcos(rX, degrees),
 		Float: cosY = floatcos(rY, degrees),
@@ -234,9 +414,16 @@ stock GetRotationMatrixFromEuler(Float: matrix[][], Float: rX, Float: rY, Float:
 			matrix[2][2] = cosX * cosY;
 		}
 	}
+	matrix[0][3] = 0.0;
+	matrix[1][3] = 0.0;
+	matrix[2][3] = 0.0;
+	matrix[3][0] = 0.0;
+	matrix[3][1] = 0.0;
+	matrix[3][2] = 0.0;
+	matrix[3][3] = 1.0;
 }
 
-stock GetRotationMatrixFromAxisAngle(Float: matrix[][], Float: angle, Float: aX, Float: aY, Float: aZ) {
+stock GetRotationMatrixFromAxisAngle(Float: matrix[4][4], Float: angle, Float: aX, Float: aY, Float: aZ) {
 	new
 		Float: cos = floatcos(angle, degrees),
 		Float: sin = floatsin(angle, degrees),
@@ -260,6 +447,14 @@ stock GetRotationMatrixFromAxisAngle(Float: matrix[][], Float: angle, Float: aX,
 
 	matrix[1][2] = cos - sin * aX;
 	matrix[2][1] = cos + sin * aX;
+
+	matrix[0][3] = 0.0;
+	matrix[1][3] = 0.0;
+	matrix[2][3] = 0.0;
+	matrix[3][0] = 0.0;
+	matrix[3][1] = 0.0;
+	matrix[3][2] = 0.0;
+	matrix[3][3] = 1.0;
 }
 
 // can result in NaN (1.0 + matrix[0][0] + matrix[1][1] + matrix[2][2]) could be <= 0.0
@@ -271,7 +466,7 @@ stock GetQuatFromMatrix(Float: matrix[][], & Float: w, & Float: x, & Float: y, &
 	z = (matrix[1][0] - matrix[0][1]) / z;
 }
 
-stock GetQuatFromEuler(Float: rX, Float: rY, Float: rZ, & Float: w, & Float: x, & Float: y, & Float: z, eulermode: mode = euler_default) {
+stock GetQuatFromEuler(Float: rX, Float: rY, Float: rZ, & Float: w, & Float: x, & Float: y, & Float: z, eulermode: mode = euler_samp) {
 	rX /= 2.0; // could be done with multiplication but would be slower
 	rY /= 2.0;
 	rZ /= 2.0;
@@ -370,13 +565,13 @@ stock GetQuatFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Floa
 	w = floatcos(angle, degrees);
 }
 
-stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
+stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp) {
 	switch(mode) {
 		case euler_xzx: {
 			rY = matrix[0][0];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[2][1], matrix[1][1]);
+				rX = atan2(matrix[2][1], matrix[1][1]); // -12, 22
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -393,7 +588,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[0][0];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[2][1], matrix[1][1]);
+				rX = atan2(matrix[2][1], matrix[1][1]); // -12, 22
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -410,7 +605,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[1][1];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[0][2], matrix[2][2]);
+				rX = atan2(matrix[0][2], matrix[2][2]); // -20, 00
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -427,7 +622,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[1][1];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[0][2], matrix[2][2]);
+				rX = atan2(matrix[0][2], matrix[2][2]); // -20, 00
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -444,7 +639,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[2][2];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[1][0], matrix[0][0]);
+				rX = atan2(matrix[1][0], matrix[0][0]); // -01, 11
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -461,7 +656,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[2][2];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[1][0], matrix[0][0]);
+				rX = atan2(matrix[1][0], matrix[0][0]); // -01, 11
 				rY = 0.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -478,7 +673,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rZ = matrix[0][1];
 
 			if(rZ < -0.9999) {
-				rX = atan2(matrix[2][0], matrix[1][0]);
+				rX = atan2(matrix[2][0], matrix[1][0]); // -12, 22
 				rY = 0.0;
 				rZ = 90.0;
 			} else if(rZ > 0.9999) {
@@ -495,7 +690,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			rY = matrix[0][2];
 
 			if(rY > 0.9999) {
-				rX = atan2(matrix[2][1], matrix[1][1]);
+				rX = atan2(matrix[2][1], matrix[1][1]); // 10, -20
 				rY = 90.0;
 				rZ = 0.0;
 			} else if(rY < -0.9999) {
@@ -513,7 +708,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 
 			if(rX < -0.9999) {
 				rX = 90.0;
-				rY = atan2(matrix[0][1], matrix[2][1]);
+				rY = atan2(matrix[0][1], matrix[2][1]); // -20, 00
 				rZ = 0.0;
 			} else if(rX > 0.9999) {
 				rX = -90.0;
@@ -528,11 +723,11 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 		case euler_yzx: {
 			rZ = matrix[1][0];
 
-			if(rZ < -0.9999) {
+			if(rZ > 0.9999) {
 				rX = 0.0;
-				rY = atan2(matrix[0][2], matrix[2][2]);
+				rY = atan2(matrix[0][2], matrix[2][2]); // 21, -01
 				rZ = 90.0;
-			} else if(rZ > 0.9999) {
+			} else if(rZ < -0.9999) {
 				rX = 0.0;
 				rY = atan2(matrix[0][2], matrix[2][2]);
 				rZ = -90.0;
@@ -545,11 +740,11 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 		case euler_zyx: { // pitch roll yaw
 			rY = matrix[2][0];
 
-			if(rY > 0.9999) {
+			if(rY < -0.9999) {
 				rX = 0.0;
 				rY = 90.0;
-				rZ = atan2(matrix[1][2], matrix[0][2]);
-			} else if(rY < -0.9999) {
+				rZ = atan2(matrix[1][2], matrix[0][2]); // -01, 11
+			} else if(rY > 0.9999) {
 				rX = 0.0;
 				rY = -90.0;
 				rZ = atan2(matrix[1][2], matrix[0][2]);
@@ -565,7 +760,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 			if(rX > 0.9999) { // ~ 89.2 degrees
 				rX = 90.0;
 				rY = 0.0;
-				rZ = atan2(matrix[1][0], matrix[0][0]);
+				rZ = atan2(matrix[1][0], matrix[0][0]); // 02, -12
 			} else if(rX < -0.9999) {
 				rX = -90.0;
 				rY = 0.0;
@@ -579,7 +774,7 @@ stock GetEulerFromMatrix(Float: matrix[][], & Float: rX, & Float: rY, & Float: r
 	}
 }
 
-stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
+stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp) {
 	switch(mode) {
 		case euler_xzx: {
 			rY = w * w + x * x - y * y - z * z;
@@ -746,11 +941,11 @@ stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Fl
 		case euler_yzx: {
 			rZ = x * y - w * z;
 
-			if(rZ < -0.49995) {
+			if(rZ > 0.49995) {
 				rX = 0.0;
 				rY = atan2(w * y - x * z, x * y + w * z);
 				rZ = 90.0;
-			} else if(rZ > 0.49995) {
+			} else if(rZ < -0.49995) {
 				rX = 0.0;
 				rY = atan2(x * z - w * y, x * y + w * z);
 				rZ = -90.0;
@@ -766,11 +961,11 @@ stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Fl
 		case euler_zyx: { // pitch roll yaw
 			rY = x * z + w * y;
 
-			if(rY > 0.49995) {
+			if(rY < -0.49995) {
 				rX = 0.0;
 				rY = 90.0;
 				rZ = atan2(y * z + w * x, x * z - w * y);
-			} else if(rY < -0.49995) {
+			} else if(rY > 0.49995) {
 				rX = 0.0;
 				rY = -90.0;
 				rZ = atan2(y * z + w * x, x * z - w * y);
@@ -806,19 +1001,19 @@ stock GetEulerFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: rX, & Fl
 	}
 }
 
-stock GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
-	GetQuatFromEuler(oX, oY, oZ, rX, oX, oY, oZ, omode);
+stock GetEulerFromEuler(Float: oX, Float: oY, Float: oZ, eulermode: omode, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp) {
+	GetQuatFromEuler(oX, oY, oZ, rX, oX, oY, oZ, omode); // to much work I guess
 	GetEulerFromQuat(rX, oX, oY, oZ, rX, rY, rZ, mode);
 }
 
-stock GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_default) {
+stock GetEulerFromAxisAngle(Float: angle, Float: aX, Float: aY, Float: aZ, & Float: rX, & Float: rY, & Float: rZ, eulermode: mode = euler_samp) {
 	new Float: matrix[3][3]; // leaving that unoptimised, see no use for it
 
 	GetRotationMatrixFromAxisAngle(matrix, angle, aX, aY, aZ);
 	GetEulerFromMatrix(matrix, rX, rY, rZ, mode);
 }
 
-stock GetAxisAngleFromMatrix(Float: matrix[3][3], & Float: angle, & Float: aX, & Float: aY, & Float: aZ) {
+stock GetAxisAngleFromMatrix(Float: matrix[][], & Float: angle, & Float: aX, & Float: aY, & Float: aZ) {
 	aX = matrix[2][1] - matrix[1][2]; // does have untriggered singularities
 	aY = matrix[0][2] - matrix[2][0];
 	aZ = matrix[1][0] - matrix[0][1];
@@ -849,15 +1044,16 @@ stock GetAxisAngleFromQuat(Float: w, Float: x, Float: y, Float: z, & Float: angl
 	}
 }
 
-stock GetAxisAngleFromEuler(Float: rX, Float: rY, Float: rZ, & Float: angle, & Float: aX, & Float: aY, & Float: aZ, eulermode: mode = euler_default) {
+stock GetAxisAngleFromEuler(Float: rX, Float: rY, Float: rZ, & Float: angle, & Float: aX, & Float: aY, & Float: aZ, eulermode: mode = euler_samp) {
 	GetQuatFromEuler(rX, rY, rZ, angle, aX, aY, aZ, mode);
 	GetAxisAngleFromQuat(angle, aX, aY, aZ, angle, aX, aY, aZ);	
 }
 
-stock MatrixRotate(Float: matrix[][], Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z) {
-	X += oX * matrix[0][0] + oY * matrix[0][1] + oZ * matrix[0][2]; // M * v | v = [oX, oY, oZ]
-	Y += oX * matrix[1][0] + oY * matrix[1][1] + oZ * matrix[1][2];
-	Z += oX * matrix[2][0] + oY * matrix[2][1] + oZ * matrix[2][2];
+stock MatrixRotate(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float: oT, & Float: X, & Float: Y, & Float: Z) {
+	// oT = Translation, 0.0 for no translation, 1.0 for translation
+	X += oX * matrix[0][0] + oY * matrix[0][1] + oZ * matrix[0][2] + oT * matrix[0][3]; // M * v | v = [oX, oY, oZ]
+	Y += oX * matrix[1][0] + oY * matrix[1][1] + oZ * matrix[1][2] + oT * matrix[1][3];
+	Z += oX * matrix[2][0] + oY * matrix[2][1] + oZ * matrix[2][2] + oT * matrix[2][3];
 }
 
 stock QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z) {
@@ -876,8 +1072,8 @@ stock QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, F
 	Z += 2.0 * (dot * z + abs * oZ + w * (y * oX - x * oY));
 }
 
-stock EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_default) {
-	// saddly I couldn't find a way to rotate euler angles without matrices, is there even a way?
+stock EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_samp) {
+	// saddly I couldn't find a way to rotate euler angles without a step in between, is there even a way?
 	GetQuatFromEuler(rX, rY, rZ, Float: mode, rX, rY, rZ, mode);
 	QuatRotate(Float: mode, rX, rY, rZ, oX, oY, oZ, X, Y, Z);
 }
