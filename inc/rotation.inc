@@ -86,6 +86,9 @@ native MatrixRotate(Float: matrix[4][4], Float: oX, Float: oY, Float: oZ, Float:
 native QuatRotate(Float: w, Float: x, Float: y, Float: z, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
 native EulerRotate(Float: rX, Float: rY, Float: rZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z, eulermode: mode = euler_samp)
 native AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, Float: oY, Float: oZ, & Float: X, & Float: Y, & Float: Z)
+
+native GetVehicleObjectPositionWorld(vehicleid, Float: att_X, Float: att_Y, Float: att_Z, Float: att_rotX, Float: att_rotY, Float: att_rotZ, &Float: X, &Float: Y, &Float: Z, &Float: rotX, &Float: rotY, &Float: rotZ)
+native GetVehicleObjectPositionOffset(vehicleid, Float: X, Float: Y, Float: Z, Float: rotX, Float: rotY, Float: rotZ, &Float: att_X, &Float: att_Y, &Float: att_Z, &Float: att_rotX, &Float: att_rotY, &Float: att_rotZ)
 native
 */
 
@@ -1087,4 +1090,63 @@ stock AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, 
 	X += ts * aX + cos * oX + sin * (aY * oZ - aZ * oY);
 	Y += ts * aY + cos * oY + sin * (aZ * oX - aX * oZ);
 	Z += ts * aZ + cos * oZ + sin * (aX * oY - aY * oX);
+}
+
+// misc - Get real / offset position of attached vehicle objects
+
+
+stock GetVehicleObjectPositionWorld(vehicleid,
+    Float: att_X, Float: att_Y, Float: att_Z, Float: att_rotX, Float: att_rotY, Float: att_rotZ,
+    &Float: X, &Float: Y, &Float: Z, &Float: rotX, &Float: rotY, &Float: rotZ
+    ) {
+    if(GetVehiclePos(vehicleid, X, Y, Z)) {
+        new
+            Float: w,
+            Float: x,
+            Float: y,
+            Float: z,
+            Float: matrix[4][4];
+
+        GetVehicleRotationQuat(vehicleid, w, x, y, z);
+
+        QuatRotate(w, x, y, z, att_X, att_Y, att_Z, X, Y, Z);
+
+        GetRotationMatrixFromEuler(matrix, att_rotX, att_rotY, att_rotZ);
+        RotateMatrixWithQuat(matrix, w, x, y, z);
+        GetEulerFromMatrix(matrix, rotX, rotY, rotZ);
+        return true;
+    }
+    return false;
+}
+
+stock GetVehicleObjectPositionOffset(vehicleid,
+    Float: X, Float: Y, Float: Z, Float: rotX, Float: rotY, Float: rotZ,
+    &Float: att_X, &Float: att_Y, &Float: att_Z, &Float: att_rotX, &Float: att_rotY, &Float: att_rotZ
+    ) {
+    if(GetVehiclePos(vehicleid, att_X, att_Y, att_Z)) {
+        new
+            Float: w,
+            Float: x,
+            Float: y,
+            Float: z,
+            Float: matrix[4][4];
+
+        GetVehicleRotationQuat(vehicleid, w, x, y, z);
+        GetRotationMatrixFromQuat(matrix, w, x, y, z);
+
+        X -= att_X;
+        Y -= att_Y;
+        Z -= att_Z;
+
+        att_X = matrix[0][0] * X + matrix[1][0] * Y + matrix[2][0] * Z;
+        att_Y = matrix[0][1] * X + matrix[1][1] * Y + matrix[2][1] * Z;
+        att_Z = matrix[0][2] * X + matrix[1][2] * Y + matrix[2][2] * Z;
+
+        GetRotationMatrixFromEuler(matrix, rotX, rotY, rotZ);
+        RotateMatrixWithQuat(matrix, -w, x, y, z);
+        GetEulerFromMatrix(matrix, att_rotX, att_rotY, att_rotZ);
+
+        return true;
+    }
+    return false;
 }
