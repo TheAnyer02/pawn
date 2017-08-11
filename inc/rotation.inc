@@ -17,6 +17,8 @@
  *     - Translation function added for Rotation Matrix
  *     - euler_default renamed to euler_samp
  *     - additional translate parameter 'oT' in MatrixRotate
+ *   2.1 (11.08.2017)
+ *     - GetVehicleObjectPositionWorld, GetVehicleObjectPositionWorld added
  */
  
  // Right to left - absoulte Rotation (active)
@@ -1093,7 +1095,6 @@ stock AxisAngleRotate(Float: angle, Float: aX, Float: aY, Float: aZ, Float: oX, 
 }
 
 // misc - Get real / offset position of attached vehicle objects
-
 
 stock GetVehicleObjectPositionWorld(vehicleid,
     Float: att_X, Float: att_Y, Float: att_Z, Float: att_rotX, Float: att_rotY, Float: att_rotZ,
