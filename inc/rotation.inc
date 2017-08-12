@@ -1106,15 +1106,18 @@ stock GetVehicleObjectPositionWorld(vehicleid,
             Float: x,
             Float: y,
             Float: z,
-            Float: matrix[4][4];
+            Float: matrix1[4][4],
+            Float: matrix2[4][4];
 
         GetVehicleRotationQuat(vehicleid, w, x, y, z);
 
-        QuatRotate(w, x, y, z, att_X, att_Y, att_Z, X, Y, Z);
+        GetRotationMatrixFromEuler(matrix1, att_rotX, att_rotY, att_rotZ);
+        GetRotationMatrixFromQuat(matrix2, w, x, y, z);
 
-        GetRotationMatrixFromEuler(matrix, att_rotX, att_rotY, att_rotZ);
-        RotateMatrixWithQuat(matrix, w, x, y, z);
-        GetEulerFromMatrix(matrix, rotX, rotY, rotZ);
+        MatrixRotate(matrix2, att_X, att_Y, att_Z, 0.0, X, Y, Z);
+
+        RotateMatrixWithMatrix(matrix1, matrix2);
+        GetEulerFromMatrix(matrix1, rotX, rotY, rotZ);
 
         return true;
     }
@@ -1131,21 +1134,24 @@ stock GetVehicleObjectPositionOffset(vehicleid,
             Float: x,
             Float: y,
             Float: z,
-            Float: matrix[4][4];
+            Float: matrix1[4][4],
+            Float: matrix2[4][4];
 
         GetVehicleRotationQuat(vehicleid, w, x, y, z);
-        GetRotationMatrixFromQuat(matrix, -w, x, y, z);
+
+        GetRotationMatrixFromEuler(matrix1, rotX, rotY, rotZ);
+        GetRotationMatrixFromQuat(matrix2, -w, x, y, z);
 
         X -= att_X;
         Y -= att_Y;
         Z -= att_Z;
 
-        att_X = matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z;
-        att_Y = matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z;
-        att_Z = matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z;
+        att_X = matrix2[0][0] * X + matrix2[0][1] * Y + matrix2[0][2] * Z;
+        att_Y = matrix2[1][0] * X + matrix2[1][1] * Y + matrix2[1][2] * Z;
+        att_Z = matrix2[2][0] * X + matrix2[2][1] * Y + matrix2[2][2] * Z;
 
-        RotateMatrixWithEuler(matrix, rotX, rotY, rotZ);
-        GetEulerFromMatrix(matrix, att_rotX, att_rotY, att_rotZ);
+        RotateMatrixWithMatrix(matrix1, matrix2);
+        GetEulerFromMatrix(matrix1, att_rotX, att_rotY, att_rotZ);
 
         return true;
     }
