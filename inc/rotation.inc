@@ -258,13 +258,13 @@ stock GetRotationMatrixFromQuat(Float: matrix[4][4], Float: w, Float: x, Float: 
 
 	// rotation
 	matrix[0][0] = w2 + x2 - y2 - z2;
-	matrix[0][1] = xy + wz;
-	matrix[0][2] = xz - wy;
 	matrix[1][0] = xy - wz;
-	matrix[1][1] = w2 - x2 + y2 - z2;
-	matrix[1][2] = yz + wx;
 	matrix[2][0] = xz + wy;
+	matrix[0][1] = xy + wz;
+	matrix[1][1] = w2 - x2 + y2 - z2;
 	matrix[2][1] = yz - wx;
+	matrix[0][2] = xz - wy;
+	matrix[1][2] = yz + wx;
  	matrix[2][2] = w2 - x2 - y2 + z2;
 	// translation
 	matrix[0][3] = 0.0;
@@ -1115,6 +1115,7 @@ stock GetVehicleObjectPositionWorld(vehicleid,
         GetRotationMatrixFromEuler(matrix, att_rotX, att_rotY, att_rotZ);
         RotateMatrixWithQuat(matrix, w, x, y, z);
         GetEulerFromMatrix(matrix, rotX, rotY, rotZ);
+
         return true;
     }
     return false;
@@ -1133,18 +1134,17 @@ stock GetVehicleObjectPositionOffset(vehicleid,
             Float: matrix[4][4];
 
         GetVehicleRotationQuat(vehicleid, w, x, y, z);
-        GetRotationMatrixFromQuat(matrix, w, x, y, z);
+        GetRotationMatrixFromQuat(matrix, -w, x, y, z);
 
         X -= att_X;
         Y -= att_Y;
         Z -= att_Z;
 
-        att_X = matrix[0][0] * X + matrix[1][0] * Y + matrix[2][0] * Z;
-        att_Y = matrix[0][1] * X + matrix[1][1] * Y + matrix[2][1] * Z;
-        att_Z = matrix[0][2] * X + matrix[1][2] * Y + matrix[2][2] * Z;
+        att_X = matrix[0][0] * X + matrix[0][1] * Y + matrix[0][2] * Z;
+        att_Y = matrix[1][0] * X + matrix[1][1] * Y + matrix[1][2] * Z;
+        att_Z = matrix[2][0] * X + matrix[2][1] * Y + matrix[2][2] * Z;
 
-        GetRotationMatrixFromEuler(matrix, rotX, rotY, rotZ);
-        RotateMatrixWithQuat(matrix, -w, x, y, z);
+        RotateMatrixWithEuler(matrix, rotX, rotY, rotZ);
         GetEulerFromMatrix(matrix, att_rotX, att_rotY, att_rotZ);
 
         return true;
